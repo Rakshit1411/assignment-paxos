@@ -69,6 +69,21 @@ python3 -m pytest test_log_parser.py
 ## Design Decisions
 
 ### Architecture
+
+```mermaid
+graph TD
+    File[Log File] -->|Lazy Read Line-by-Line| Parser[LogParser]
+    Parser -->|Parse JSON & Regex| Entry[LogEntry]
+    Entry --> Filter{Matches Filters?}
+    Filter -->|No| Skip[Skip]
+    Filter -->|Yes| Action[Yield Entry]
+    
+    Action --> Stats[Generate Statistics]
+    Action --> Export[Export to File]
+    Action --> App[User Application]
+```
+
+The solution consists of three main components:
 - **`LogEntry` Dataclass**: Provides a structured representation of a log line with typed fields (`timestamp`, `level`, `metadata`, etc.) for easy access and autocomplete support.
 - **`LogParser` Class**: The main entry point. It handles file reading and filtering.
 - **Lazy Loading**: The core design principle is to never load the entire file into memory. The `__iter__` method yields one `LogEntry` at a time. Filters are stored and applied during iteration.
