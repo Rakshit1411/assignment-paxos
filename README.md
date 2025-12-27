@@ -44,6 +44,7 @@ print(stats)
 # Supported formats: json, csv, text
 important.export("filtered_logs.json", format="json")
 important.export("filtered_logs.csv", format="csv")
+```
 
 ### Supported Filter Keys
 The following keys have special handling in `filter_all` and `filter_any`:
@@ -51,6 +52,7 @@ The following keys have special handling in `filter_all` and `filter_any`:
 - **Metadata**: `level`, `container`, `pod`, `namespace`.
 - **Custom**: Any other key (e.g., `tenant`, `case_id`) will be matched against `key=value` pairs extracted from the log message.
 
+```python
 # Iterate through results
 for log in errors:
     print(f"{log.timestamp} - {log.level} - {log.message}")
