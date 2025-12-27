@@ -23,6 +23,9 @@ errors = logs.filter_all(level="ERROR")
 # Filter by time range
 recent = logs.filter_all(after="2025-10-07T16:00:00Z")
 
+# Filter by relative time window
+last_hour = logs.filter_all(last_minutes=60)
+
 # Filter by container
 backend_logs = logs.filter_all(container="backend")
 
@@ -41,6 +44,12 @@ print(stats)
 # Supported formats: json, csv, text
 important.export("filtered_logs.json", format="json")
 important.export("filtered_logs.csv", format="csv")
+
+### Supported Filter Keys
+The following keys have special handling in `filter_all` and `filter_any`:
+- **Time**: `start`, `after`, `end`, `before` (ISO 8601 strings), `last_minutes` (float).
+- **Metadata**: `level`, `container`, `pod`, `namespace`.
+- **Custom**: Any other key (e.g., `tenant`, `case_id`) will be matched against `key=value` pairs extracted from the log message.
 
 # Iterate through results
 for log in errors:
@@ -83,4 +92,5 @@ python3 -m pytest test_log_parser.py
 - **Regex Filtering**: Add support for `message_match=r"..."`.
 - **Indexing**: For very large files, building a lightweight index of byte offsets for timestamps could speed up time-based queries without full scans.
 - **Complex Query Language**: Improve filtering logic to support nested AND/OR combinations and a string-based query language (e.g. `level=ERROR AND (tenant=A OR tenant=B)`).
+- **Compressed Files**: Transparent support for reading `.log.gz` files.
 - **CLI Tool**: Wrapper to use the library directly from the command line.

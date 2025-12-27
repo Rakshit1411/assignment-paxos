@@ -1,7 +1,7 @@
 import json
 import re
 import csv
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional, Iterator, List
 from dateutil import parser as date_parser
@@ -100,21 +100,24 @@ class LogParser:
             return entry.metadata.get("kubernetes", {}).get("pod_name") == value
         elif key == "namespace":
             return entry.metadata.get("kubernetes", {}).get("namespace_name") == value
-        elif key == "after":
+        elif key == "start" or key == "after":
+            # value is ISO string
             try:
-                dt_val = date_parser.parse(value)
-                # Ensure timezone awareness compatibility
-                if entry.timestamp.tzinfo is None and dt_val.tzinfo is not None:
-                    # fallback if log has no timezone, assume UTC or match input
-                    pass
-                return entry.timestamp > dt_val
-            except (ValueError, TypeError):
+                dt = date_parser.parse(value)
+                return entry.timestamp >= dt
+            except Exception:
                 return False
-        elif key == "before":
+        elif key == "end" or key == "before":
             try:
-                dt_val = date_parser.parse(value)
-                return entry.timestamp < dt_val
-            except (ValueError, TypeError):
+                dt = date_parser.parse(value)
+                return entry.timestamp <= dt
+            except Exception:
+                return False
+        elif key == "last_minutes":
+            try:
+                cutoff = datetime.now(timezone.utc) - timedelta(minutes=float(value))
+                return entry.timestamp >= cutoff
+            except Exception:
                 return False
 
         if key in entry.kv_pairs:

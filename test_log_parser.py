@@ -126,3 +126,30 @@ def test_export_text(log_file, tmp_path):
         lines = f.readlines()
     assert len(lines) == 4
     assert "[INFO]" in lines[0]
+
+
+def test_last_minutes_filter(tmp_path):
+    # Create dynamic logs relative to NOW
+    from datetime import datetime, timezone, timedelta
+    import json
+
+    now = datetime.now(timezone.utc)
+    old_time = now - timedelta(minutes=60)
+    recent_time = now - timedelta(minutes=10)
+
+    log_file = tmp_path / "time_window.log"
+
+    with open(log_file, "w") as f:
+        # Old log
+        log1 = {"time": old_time.isoformat(), "log": "INFO:old:Old log"}
+        f.write(json.dumps(log1) + "\n")
+        # Recent log
+        log2 = {"time": recent_time.isoformat(), "log": "INFO:new:New log"}
+        f.write(json.dumps(log2) + "\n")
+
+    parser = LogParser.from_file(str(log_file))
+    # Filter last 30 minutes
+    results = list(parser.filter_all(last_minutes=30))
+
+    assert len(results) == 1
+    assert results[0].component == "new"
