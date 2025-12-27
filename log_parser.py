@@ -57,7 +57,6 @@ class LogParser:
         Returns a new LogParser instance with the additional filters.
         Implements OR logic for the constraints provided in 'kwargs'.
         The log must match AT LEAST ONE of the conditions in 'kwargs'.
-        This entire block is ANDed with previous filters (chaining).
         """
         current_filters = self._filters.copy()
         # Use a tuple ('OR', dict) to distinguish OR groups
@@ -265,6 +264,9 @@ class LogParser:
             raise ValueError(f"Unsupported format: {format}")
 
     def _export_json(self, output_path: str) -> None:
+        """
+        Export logs to a JSON file.
+        """
         # Stream valid JSON array: [obj, obj, ...]
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("[\n")
@@ -287,6 +289,9 @@ class LogParser:
             f.write("\n]")
 
     def _export_csv(self, output_path: str) -> None:
+        """
+        Export logs to a CSV file.
+        """
         fieldnames = ["timestamp", "level", "component", "message", "container", "pod"]
 
         with open(output_path, "w", encoding="utf-8", newline="") as f:
@@ -307,6 +312,9 @@ class LogParser:
                 writer.writerow(row)
 
     def _export_text(self, output_path: str) -> None:
+        """
+        Export logs to a text file.
+        """
         with open(output_path, "w", encoding="utf-8") as f:
             for entry in self:
                 ts = entry.timestamp.isoformat()
